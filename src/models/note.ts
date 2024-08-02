@@ -5,11 +5,15 @@ const noteSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  noteTitle: {
+    type: String,
+    required: true
+  },
   videoURL: {
     type: String,
     required: true
   },
-  title: {
+  videoTitle: {
     type: String,
     required: true,
   },

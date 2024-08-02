@@ -37,7 +37,7 @@ export default async function getVideoInfo(videoURL: string) {
 
   return {
     videoURL: videoURL,
-    title: videoInfo.title, // Video title
+    videoTitle: videoInfo.title, // Video title
     creator: videoInfo.channelTitle, // Creator/channel name
     thumbnail: videoInfo.thumbnails.high.url // Video thumbnail
   };

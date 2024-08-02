@@ -22,8 +22,9 @@ export const POST = auth(async function POST(req: any) {
 
       const noteData = {
         userId: req.auth.user.id,
+        noteTitle: "New Notey",
         videoURL: body.videoURL,
-        title: body.title,
+        videoTitle: body.videoTitle,
         creator: body.creator,
         thumbnail: body.thumbnail,
       };
@@ -87,6 +88,32 @@ export const GET = auth(async function GET(req: any) {
       return NextResponse.json({ message: "not working" }, {status: 404});
     }
     
+  }
+  return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
+});
+
+export const PUT = auth(async function PUT(req: any) {
+  if (req.auth) {
+    try {
+      const body = await req.json();
+
+      await loadDB();
+
+      const updatedNote = await Note.findByIdAndUpdate(body._id, body, {new: true});
+
+      return NextResponse.json(updatedNote, { status: 200 });
+    }
+    catch (error) {
+      let message = "Unknown error occurred.";
+      if (error instanceof Error) {
+        message = error.message; // Access message if it's an Error instance
+      }
+
+      return NextResponse.json(
+        { message: "Error updating note", error: message },
+        { status: 500 }
+      );
+    }
   }
   return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
 });

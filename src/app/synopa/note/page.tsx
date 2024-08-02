@@ -2,6 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
+import { PencilSquareIcon } from "@heroicons/react/16/solid";
 
 export default function NotesPage() {
   const searchParams = useSearchParams();
@@ -9,6 +10,31 @@ export default function NotesPage() {
 
   const [noteData, setNoteData] = useState<any>(null); // State to hold the note data
   const [error, setError] = useState<string | null>(null); // State to hold error message
+  const [editingNoteTitle, setEditingNoteTitle] = useState(false); // State to hold
+
+  const updateNoteTitle = (newTitle: string) => {
+    setNoteData((noteData: any) => ({
+      ...noteData,
+      noteTitle: newTitle
+    }));
+  }
+
+  // make api request to store the notes data into the db
+  const updateNotesData = async () => {
+    const response = await fetch("http://localhost:3000/api/synopa/note", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json", // Set content type for JSON
+      },
+      body: JSON.stringify(noteData),
+    });
+    console.log(noteData);
+    const data = await response.json();
+    console.log(data);
+    if (response.status !== 200) {
+      alert("Error updating notes please check internet connection and try again");
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,8 +70,6 @@ export default function NotesPage() {
 
     fetchData(); // Invoke the fetch function
   }, [noteId]); // Dependency array ensures it only runs when noteId changes
-
-  // Early return pattern for rendering
 
   // I have split it up so its easier to understand it would have been better to do the ? : stuff probably
   if (error) {
@@ -90,9 +114,28 @@ export default function NotesPage() {
               />
             </a>
           </div>
-          <div>
-            <h1 className="text-3xl font-semibold mb-4">New Note</h1>
-            <h2>Video: {noteData.title}</h2>
+          <div className="w-full">
+            {editingNoteTitle ? (
+              <div className="flex items-center mb-4">
+                <input className="outline-none text-3xl font-semibold w-full" type="text" value={noteData.noteTitle} onChange={(e) => updateNoteTitle(e.target.value)} autoFocus={true}
+                onBlur={async () => {
+                  await updateNotesData();
+                  setEditingNoteTitle(false);
+                }} />
+              </div>
+            ) : (
+              <div className="flex items-center mb-4">
+                <h1 className="text-3xl font-semibold">{noteData.noteTitle}</h1>
+                <button className="mt-2 ml-3 shadow-sm">
+                  <PencilSquareIcon
+                    className="h-5 w-5"
+                    onClick={() => setEditingNoteTitle(true)}
+                  />
+                </button>
+              </div>
+            )}
+
+            <h2>Video: {noteData.videoTitle}</h2>
             <p>Channel: {noteData.creator}</p>
             <p>
               URL:{" "}
