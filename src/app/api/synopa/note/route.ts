@@ -22,7 +22,7 @@ export const POST = auth(async function POST(req: any) {
 
       const noteData = {
         userId: req.auth.user.id,
-        noteTitle: "New Notey",
+        noteTitle: "New Note",
         videoURL: body.videoURL,
         videoTitle: body.videoTitle,
         creator: body.creator,

@@ -1,0 +1,5 @@
+.ql-container.ql-snow {
+  border-bottom: none !important; /* Force removal if needed */
+  border-right: none !important; /* Force removal if needed */
+  border-left: none !important; /* Force removal if needed */
+}

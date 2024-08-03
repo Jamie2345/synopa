@@ -3,6 +3,11 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import { PencilSquareIcon } from "@heroicons/react/16/solid";
+import { FaArrowLeftLong } from "react-icons/fa6";
+
+import ReactQuill from "react-quill"; // Import the editor
+import "react-quill/dist/quill.snow.css"; // Import the CSS for the editor
+import "@/css/notes.css"; // Import the CSS for the notes
 
 export default function NotesPage() {
   const searchParams = useSearchParams();
@@ -12,12 +17,20 @@ export default function NotesPage() {
   const [error, setError] = useState<string | null>(null); // State to hold error message
   const [editingNoteTitle, setEditingNoteTitle] = useState(false); // State to hold
 
+  const handleNoteChange = (value: any) => {
+    console.log(noteData);
+    setNoteData({
+      ...noteData,
+      notes: value,
+    });
+  };
+
   const updateNoteTitle = (newTitle: string) => {
     setNoteData((noteData: any) => ({
       ...noteData,
-      noteTitle: newTitle
+      noteTitle: newTitle,
     }));
-  }
+  };
 
   // make api request to store the notes data into the db
   const updateNotesData = async () => {
@@ -32,9 +45,11 @@ export default function NotesPage() {
     const data = await response.json();
     console.log(data);
     if (response.status !== 200) {
-      alert("Error updating notes please check internet connection and try again");
+      alert(
+        "Error updating notes please check internet connection and try again"
+      );
     }
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,7 +118,19 @@ export default function NotesPage() {
   // If everything is fine and noteData is available
   return (
     <main className="min-h-screen" data-theme="bumblebee">
-      <div className="w-full h-screen flex flex-col">
+      <div className="w-full min-h-screen flex flex-col">
+        <div className="px-12 py-4 flex items-center justify-between">
+          <a
+            className="btn btn-sm"
+            href="/synopa"
+          >
+          <FaArrowLeftLong /> Back
+          </a>
+
+          <button className="btn btn-secondary text-white btn-sm" onClick={async () => await updateNotesData()}>
+            Save Changes
+          </button>
+        </div>
         <div className="px-12 py-8 flex items-center justify-start border-b-[1px] border-secondary-content">
           <div className="mr-10">
             <a href={noteData.videoURL} target="__blank">
@@ -117,11 +144,23 @@ export default function NotesPage() {
           <div className="w-full">
             {editingNoteTitle ? (
               <div className="flex items-center mb-4">
-                <input className="outline-none text-3xl font-semibold w-full" type="text" value={noteData.noteTitle} onChange={(e) => updateNoteTitle(e.target.value)} autoFocus={true}
-                onBlur={async () => {
-                  await updateNotesData();
-                  setEditingNoteTitle(false);
-                }} />
+                <input
+                  className="outline-none text-3xl font-semibold w-full"
+                  type="text"
+                  value={noteData.noteTitle}
+                  onChange={(e) => updateNoteTitle(e.target.value)}
+                  autoFocus={true}
+                  onBlur={async () => {
+                    await updateNotesData();
+                    setEditingNoteTitle(false);
+                  }}
+                  onKeyDown={async (e) => {
+                    if (e.key === "Enter") {
+                      await updateNotesData();
+                      setEditingNoteTitle(false);
+                    }
+                  }}
+                />
               </div>
             ) : (
               <div className="flex items-center mb-4">
@@ -139,10 +178,33 @@ export default function NotesPage() {
             <p>Channel: {noteData.creator}</p>
             <p>
               URL:{" "}
-              <a href={noteData.videoURL} target="__blank">
+              <a
+                className="text-secondary-content"
+                href={noteData.videoURL}
+                target="__blank"
+              >
                 {noteData.videoURL}
               </a>
             </p>
+          </div>
+        </div>
+        <div className="flex w-full h-screen">
+          <div className="w-[50%]"></div>
+          <div className="w-[50%] border-l-[1px] border-secondary pb-12">
+            <ReactQuill
+              value={noteData.notes}
+              onChange={handleNoteChange}
+              className="h-full border-b-0"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, false] }], // Header options
+                  ["bold", "italic", "underline"], // Formatting options
+                  ["link", "image"], // Link and image options
+                  [{ list: "ordered" }, { list: "bullet" }], // List options
+                  ["clean"], // Clear formatting button
+                ],
+              }}
+            />
           </div>
         </div>
       </div>
