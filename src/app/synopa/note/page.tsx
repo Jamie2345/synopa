@@ -17,6 +17,8 @@ export default function NotesPage() {
   const [error, setError] = useState<string | null>(null); // State to hold error message
   const [editingNoteTitle, setEditingNoteTitle] = useState(false); // State to hold
 
+  const [saving, setSavingState] = useState(false); // State to hold
+
   const handleNoteChange = (value: any) => {
     console.log(noteData);
     setNoteData({
@@ -34,20 +36,38 @@ export default function NotesPage() {
 
   // make api request to store the notes data into the db
   const updateNotesData = async () => {
-    const response = await fetch("http://localhost:3000/api/synopa/note", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json", // Set content type for JSON
-      },
-      body: JSON.stringify(noteData),
-    });
-    console.log(noteData);
-    const data = await response.json();
-    console.log(data);
-    if (response.status !== 200) {
-      alert(
-        "Error updating notes please check internet connection and try again"
-      );
+    setSavingState(true); // Start loading state
+    try {
+      const response = await fetch("http://localhost:3000/api/synopa/note", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json", // Set content type for JSON
+        },
+        body: JSON.stringify(noteData),
+      });
+  
+      const data = await response.json();
+      console.log(noteData);
+  
+      if (response.status !== 200) {
+        // If the response status is not OK, throw an error
+        throw new Error(data.message || "Error updating notes. Please try again.");
+      }
+  
+      console.log(data);
+      // Optionally do something with the data returned if successful
+    } catch (error) {
+      console.error("Error updating notes:", error);
+      console.error("Fetch error:", error);
+      // Check if err is an instance of Error
+      if (error instanceof Error) {
+        setError(error.message); // Set the error message in state
+      } else {
+        setError("An unknown error occurred"); // Fallback error message
+      }
+      alert(error)
+    } finally {
+      setSavingState(false); // Ensure we reset the saving state
     }
   };
 
@@ -120,16 +140,24 @@ export default function NotesPage() {
     <main className="min-h-screen" data-theme="bumblebee">
       <div className="w-full min-h-screen flex flex-col">
         <div className="px-12 py-4 flex items-center justify-between">
-          <a
-            className="btn btn-sm"
-            href="/synopa"
-          >
-          <FaArrowLeftLong /> Back
+          <a className="btn btn-sm" href="/synopa">
+            <FaArrowLeftLong /> Back
           </a>
+          {saving ? (
+            <span className="loading loading-spinner loading-xs mr-5"></span>
+          ) : (
 
-          <button className="btn btn-secondary text-white btn-sm" onClick={async () => await updateNotesData()}>
-            Save Changes
-          </button>
+            <button
+              className="btn btn-secondary text-white btn-sm"
+              onClick={async () => {
+                setSavingState(true);
+                await updateNotesData();
+                setSavingState(false);
+              }}
+            >
+              Save Changes
+            </button>
+          )}
         </div>
         <div className="px-12 py-8 flex items-center justify-start border-b-[1px] border-secondary-content">
           <div className="mr-10">
@@ -137,7 +165,7 @@ export default function NotesPage() {
               <img
                 src={noteData.thumbnail}
                 alt="video thumbnail"
-                className="w-52 h-auto rounded-lg shadow-lg"
+                className="w-80 h-auto rounded-lg shadow-lg"
               />
             </a>
           </div>

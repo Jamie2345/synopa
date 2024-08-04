@@ -31,7 +31,7 @@ export default function Page() {
       }
 
       const data = await response.json(); // Assuming the API sends back JSON
-      console.log("Response from API:", data);
+  
       if (data.noteId !== undefined) {
         window.location.href=`/synopa/note?note=${data.noteId}`;
       }

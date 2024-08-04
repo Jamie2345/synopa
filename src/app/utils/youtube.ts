@@ -26,6 +26,8 @@ export default async function getVideoInfo(videoURL: string) {
   }
 
   const data = await response.json();
+  console.log("video: ");
+  console.log(data);
 
   // Check if the response contains items
   if (!data.items || data.items.length === 0) {
@@ -34,11 +36,12 @@ export default async function getVideoInfo(videoURL: string) {
   }
 
   const videoInfo = data.items[0].snippet; // Get snippet from the first item
+  console.log(videoInfo);
 
   return {
     videoURL: videoURL,
     videoTitle: videoInfo.title, // Video title
     creator: videoInfo.channelTitle, // Creator/channel name
-    thumbnail: videoInfo.thumbnails.high.url // Video thumbnail
+    thumbnail: videoInfo.thumbnails.maxres.url // Video thumbnail
   };
 }
